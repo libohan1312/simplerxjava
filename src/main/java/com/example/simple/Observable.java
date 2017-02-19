@@ -1,5 +1,6 @@
 package com.example.simple;
 
+
 /**
  * 最重要的类，总的调度执行，也是对外接口
  */
@@ -7,6 +8,10 @@ package com.example.simple;
 public class Observable<T> {
     OnSubscribe<T> onSubscribe;
     boolean observeOnWorkThread = false;
+
+    public static  final  int THREAD_MAIN = 0;
+    public static  final  int THREAD_WORK = 1;
+
 
     private Observable(OnSubscribe<T> onSubscribe){
         this.onSubscribe = onSubscribe;
@@ -22,35 +27,22 @@ public class Observable<T> {
     }
 
     //线程切换操作符思路是相同的，即重新生成Observable
-    public Observable<T> subscribeOnMainThread(){
-        return create(new SwitchThreadOnSubscribe(new MainThreadOperator(),onSubscribe));
+    public Observable<T> subscribeOnWorkThread(){
+        return create(new SwitchThreadOnSubscribe(Schedulers.subWork(),onSubscribe));
+    }
+
+    public Observable<T> observerOnWorkThread(){
+        return create(new SwitchThreadOnSubscribe(Schedulers.obwork(),onSubscribe));
     }
 
 
-    public Observable<T> observeOnWorkThread(){
-        observeOnWorkThread = true;
-    return this;
-
+    public Observable<T> observeOnMainThread(){
+        return create(new SwitchThreadOnSubscribe(Schedulers.obmain(),onSubscribe));
     }
 
     public void subscribe(final Observer<T> observer){
-        //这里是执行调用的最外层，无论之前经过多少次操作符转换，都是从这里开始的，如果把这里的执行放入一个线程，那之后的调用就都在这个线程了
-        if(observeOnWorkThread){
-            runOnWorkThread(observer);
-        }else {
-            onSubscribe.call(observer);
-        }
-
+        onSubscribe.call(observer);
     }
 
-    private void runOnWorkThread(final Observer<T> observer){
-        Thread workThread = new Thread(){
-            @Override
-            public void run() {
-                onSubscribe.call(observer);
-            }
-        };
-        workThread.setName("thread-work");
-        workThread.start();
-    }
+
 }

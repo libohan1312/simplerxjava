@@ -35,7 +35,9 @@ public class SimpleTest {
                     }
                 };
             }
-        }).translate(new Operator<String, Integer>() {
+        }).subscribeOnWorkThread()
+                .observeOnMainThread()
+                .translate(new Operator<String, Integer>() {
             @Override
             public Observer<Integer> call(final Observer<String> r) {
                 return new Observer<Integer>() {
@@ -46,9 +48,20 @@ public class SimpleTest {
                     }
                 };
             }
-        }).subscribeOnMainThread()
-        .observeOnWorkThread().
-                subscribe(new Observer<String>() {
+        }).observerOnWorkThread().translate(new Operator<String, String>() {
+
+            @Override
+            public Observer<String> call(final Observer<String> r) {
+                return new Observer<String>() {
+                    @Override
+                    public void onNext(String integer) {
+                        System.out.println("get int from net by token : thread "+Thread.currentThread().getName());
+                        r.onNext(integer+"second".toString());
+                    }
+                };
+            }
+        }).observeOnMainThread().subscribeOnWorkThread()
+                .subscribe(new Observer<String>() {
             @Override
             public void onNext(final String s) {
                 System.out.println(s+" thread : "+Thread.currentThread().getName());

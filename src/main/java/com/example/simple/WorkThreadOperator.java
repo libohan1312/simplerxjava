@@ -4,7 +4,7 @@ package com.example.simple;
  * Created by Administrator on 2017/2/15.
  */
 
-public class MainThreadOperator implements Operator {
+public class WorkThreadOperator implements Operator {
     @Override
     public Observer call(final Observer r) {
 
@@ -17,7 +17,7 @@ public class MainThreadOperator implements Operator {
                         r.onNext(o);
                     }
                 };
-                mainThread.setName("main-thread");
+                mainThread.setName("work-thread");
                 mainThread.start();
             }
         };

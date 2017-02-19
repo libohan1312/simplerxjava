@@ -6,17 +6,31 @@ package com.example.simple;
 
 public class SwitchThreadOnSubscribe implements OnSubscribe {
 
-    Operator operator;
     OnSubscribe onSubscribe;
+    Scheduler scheduler;
 
-    public SwitchThreadOnSubscribe(Operator operator, OnSubscribe onSubscribe){
-        this.operator = operator;
+    public SwitchThreadOnSubscribe(Scheduler scheduler, OnSubscribe onSubscribe){
         this.onSubscribe = onSubscribe;
+        this.scheduler = scheduler;
     }
 
     @Override
-    public void call(Observer observer) {
-        Observer observer1 = operator.call(observer);
-        onSubscribe.call(observer1);
+    public void call(final Observer observer) {
+//        if(threadType == Observable.THREAD_MAIN){
+//            Observer observer1 = new MainThreadOperator().call(observer);
+//            onSubscribe.call(observer1);
+//        }else {
+//            Thread workThread = new Thread(){
+//                @Override
+//                public void run() {
+//                    onSubscribe.call(observer);
+//                }
+//            };
+//            workThread.setName("work-thread");
+//            workThread.start();
+//        }
+
+        scheduler.schedule(observer,onSubscribe);
+
     }
 }
